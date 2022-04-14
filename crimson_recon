@@ -108,15 +108,17 @@ amass_enum() {
 	rm crt.txt
 	# amass.txt
 	amass enum --passive -d "$DOMAIN" -o amass.txt -rf resolvers.txt > /dev/null 2>&1
+	amass enum  -active -d "$DOMAIN" -config ~/tools/amass_config.ini  -ip -brute -min-for-recursive 3 -o amass_active.txt
 	cat amass.txt | anew subdomains.txt > /dev/null
-	rm amass.txt
+	cat amass_active.txt | awk '{print $1}' | anew subdomains.txt > /dev/null
+	rm amass.txt amass_active.txt
 }
 
 subfinder_enum() {
 	### 4.SUBFINDER
 	anchor_check "${FUNCNAME[0]}" || return 0
 
-	subfinder -silent -recursive -d "$DOMAIN" -o subfinder.txt > /dev/null
+	subfinder -silent -all -recursive -t 100 -d "$DOMAIN" -o subfinder.txt > /dev/null
 	cat subfinder.txt | anew subdomains.txt > /dev/null
 	rm subfinder.txt
 }
@@ -165,7 +167,7 @@ check_for_live_1() {
 	echo -e "\033[0;31m [+]\033[0m CHECKING FOR LIVE SUBDOMAINS"
 	echo -e "\033[0;31m==================================\033[0m"
 	cat subdomains.txt | dnsx -t 200 -silent -r resolvers.txt -o dnsx1.txt
-	dns-wildcard-removal --domain "$DOMAIN" --input dnsx1.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
+	dns-wildcard-removal --threads 20 --domain "$DOMAIN" --input dnsx1.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live1.txt
 	rm dnsx1.txt && rm real.txt
 	echo -e "\033[0;31m==================================\033[0m"
@@ -197,7 +199,7 @@ check_for_live_2() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	cat puredns2.txt | dnsx -t 200 -silent -r resolvers.txt -o dnsx2.txt > /dev/null
-	dns-wildcard-removal --domain "$DOMAIN" --input dnsx2.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
+	dns-wildcard-removal --threads 20 --domain "$DOMAIN" --input dnsx2.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live2.txt
 	rm dnsx2.txt && rm real.txt
 	### MERGING live1.txt AND live2.txt = live.txt
@@ -239,7 +241,7 @@ waybackurls_get_urls() {
 	### 14.WAYBACKURLS
 	anchor_check "${FUNCNAME[0]}" || return 0
 
-	cat live.txt | waybackurls >> waybackurls.txt
+	timeout 20m cat live.txt | waybackurls >> waybackurls.txt
 	cat waybackurls.txt | unfurl -u domains > subs_waybackurls.txt
 	sort -u subs_waybackurls.txt live.txt > live2.txt
 	mv live2.txt live.txt
@@ -262,7 +264,7 @@ check_for_live_urls() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING FOR LIVE URLS && STATUS CODES"
-	cat urls.txt | httpx -threads 200 -silent -sc -nc -o status_urls.txt > /dev/null
+	cat urls.txt | httpx -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -threads 200 -silent -sc -nc -o status_urls.txt > /dev/null
 	cat status_urls.txt | cut -d " " -f 1 > urls.txt
 }
 
@@ -279,7 +281,7 @@ check_for_live_3() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	cat subdomainizer.txt | grep "$DOMAIN" | dnsx -t 200 -silent -r resolvers.txt -o dnsx3.txt
-	dns-wildcard-removal --domain "$DOMAIN" --input dnsx3.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
+	dns-wildcard-removal --threads 20 --domain "$DOMAIN" --input dnsx3.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live3.txt
 	cat live3.txt | anew live.txt > /dev/null
 	rm live3.txt && rm dnsx3.txt && rm real.txt
@@ -307,8 +309,8 @@ check_for_live_4() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING LIVE HOSTS"
-	cat hosthunter.txt | grep "$DOMAIN" | sort -u | anew | dnsx -t 100 -silent -r resolvers.txt -o dnsx4.txt > /dev/null
-	dns-wildcard-removal --domain "$DOMAIN" --input dnsx4.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
+	cat hosthunter.txt | grep "$DOMAIN" | sort -u | anew | dnsx -t 200 -silent -r resolvers.txt -o dnsx4.txt > /dev/null
+	dns-wildcard-removal --threads 20 --domain "$DOMAIN" --input dnsx4.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live4.txt
 	rm dnsx4.txt && rm real.txt
 	cat live4.txt | anew live.txt > /dev/null
@@ -382,7 +384,7 @@ check_cors() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING CORS"
-	cat live.txt | CorsMe -t 50 -output cors_scan.txt > /dev/null
+	cat live.txt | CorsMe -t 100 -output cors_scan.txt > /dev/null
 }
 
 check_domain_takeover() {
@@ -406,7 +408,7 @@ make_live_with_protocol() {
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING STATUS CODE OF ENUMERATED LIVE SUBDOMAINS"
 	for line in $(cat live.txt); do echo -e "https://$line\nhttp://$line" ;done >> temp_live_with_protocol.txt
-	cat temp_live_with_protocol.txt | httpx -threads 200 -silent -sc -nc -o status_live.txt > /dev/null
+	cat temp_live_with_protocol.txt | httpx -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -threads 200 -silent -sc -nc -o status_live.txt > /dev/null
 	cat status_live.txt | cut -d " " -f 1 > live_with_protocol.txt
 	rm temp_live_with_protocol.txt
 }
@@ -418,7 +420,7 @@ nuclei_scan_all() {
 	echo -e "\033[0;31m [+]\033[0m STARTING NUCLEI SCAN"
 	git clone https://github.com/projectdiscovery/nuclei-templates.git > /dev/null 2>&1
 	rm -rf nuclei-templates/token-spray
-	nuclei -l live_with_protocol.txt -t nuclei-templates/ -stats -silent | tee -a nuclei.txt
+	nuclei -l live_with_protocol.txt -t nuclei-templates/ -stats -silent -c 200 -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" | tee -a nuclei.txt
 }
 
 log4j_scan() {
@@ -447,7 +449,7 @@ check_for_live_5() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	cat 3rdlevel.txt | dnsx -o dnsx5.txt 2>/dev/null
-	dns-wildcard-removal --domain "$DOMAIN" --input dnsx5.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
+	dns-wildcard-removal --threads 200 --domain "$DOMAIN" --input dnsx5.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u >> 3rdlevel_live.txt
 	rm dnsx5.txt && rm real.txt
 	rm -rf 3rdlevel/3rdlevel.txt
