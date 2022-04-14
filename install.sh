@@ -37,45 +37,45 @@ cd ..
 ### FFUF INSTALL
 go get -u github.com/ffuf/ffuf
 ### SUBFINDER
-GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ### PARAMSPIDER
 git clone https://github.com/devanshbatham/ParamSpider
 cd ParamSpider
 python3 -m pip install -r requirements.txt
 cd ..
 ### ASSETFINDER
-go get -u github.com/tomnomnom/assetfinder
+go install -v  github.com/tomnomnom/assetfinder@latest
 ### GOWITNESS
-go get -u github.com/sensepost/gowitness
+go install -v github.com/sensepost/gowitness@latest
 ### HTTPROBE
-go get -u github.com/tomnomnom/httprobe
+go install -v github.com/tomnomnom/httprobe@latest
 ### CORSME
-go get -u -v github.com/shivangx01b/CorsMe
+go install -v github.com/shivangx01b/CorsMe@latest
 ### SUBJACK
-go get github.com/haccer/subjack
+go install -v github.com/haccer/subjack@latest
 ### HAKRAWLER
-go get github.com/hakluke/hakrawler
+go install -v github.com/hakluke/hakrawler@latest
 ### ARJUN
 python3 -m pip install arjun
 ### SMUGGLER
 git clone https://github.com/defparam/smuggler
 ### GOSPIDER
-go get -u github.com/jaeles-project/gospider
+go install -v github.com/jaeles-project/gospider@latest
 ### XSSTRIKE
 git clone https://github.com/s0md3v/XSStrike.git
 cd XSStrike
 python3 -m pip install -r requirements.txt
 cd ..
 ### DALFOX
-GO111MODULE=on go get -v github.com/hahwul/dalfox/v2
+go install github.com/hahwul/dalfox/v2@latest
 ### WAYBACKURLS
-go get github.com/tomnomnom/waybackurls
+go install -v github.com/tomnomnom/waybackurls@latest
 ### UNFURL
-go get -u github.com/tomnomnom/unfurl
+go install -v github.com/tomnomnom/hacks/unfurl@latest
 ### QSREPLACE
-go get -u github.com/tomnomnom/qsreplace
+go install -v github.com/tomnomnom/hacks/qsreplace@latest
 ### DNSX
-GO111MODULE=on go get -v github.com/projectdiscovery/dnsx/cmd/dnsx
+go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
 ### JSBEAUTIFIER
 pip install jsbeautifier
 ### GETJS
@@ -87,16 +87,16 @@ python setup.py install
 python3 -m pip install -r requirements.txt
 cd ..
 ### CRLFUZZ
-GO111MODULE=on go get -v github.com/dwisiswant0/crlfuzz/cmd/crlfuzz
+go install -v github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
 ### WEBTECH
 pip install webtech
 ### GAU
-GO111MODULE=on go get -u -v github.com/lc/gau
+go install -v github.com/lc/gau@latest
 mv $HOME/go/bin/gau $HOME/go/bin/get-all-urls
 ### GALLER
-GO111MODULE=on go get github.com/dwisiswant0/galer
+go install -v github.com/dwisiswant0/galer@latest
 ### HTTPX
-GO111MODULE=on go get -v github.com/projectdiscovery/httpx/cmd/httpx
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 ### FEROXBUSTER
 curl -sL https://raw.githubusercontent.com/epi052/feroxbuster/master/install-nix.sh | bash
 ### TLDEXTRACT
@@ -151,25 +151,25 @@ git clone https://github.com/yuriyyakym/sitemap-urls.git
 ### CRIMSON LIBS
 pip install future tqdm IPy
 ### DIRDAR
-go get -u github.com/m4dm0e/dirdar
+go install -v github.com/m4dm0e/dirdar@latest
 ### HBH-HEADER-ABUSE
 git clone https://gist.github.com/298d11b3a77b97c908d63a345d3c624d.git hop-by-hop/
 ### SHCHECK
 python3 -m pip install shcheck
 ### PROTOTYPE POLLUTION
-go get github.com/TwinProduction/go-color
-go get -u github.com/chromedp/chromedp
+go install -v github.com/TwinProduction/go-color@latest
+go install -v github.com/chromedp/chromedp@latest
 ### NUCLEI
-GO111MODULE=on go get -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei
+go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
 nuclei -update-templates
 ### DNSPROBE
-GO111MODULE=on go get -v github.com/projectdiscovery/dnsprobe
+go install -v github.com/projectdiscovery/dnsprobe@latest
 ### WEBANALYZE
-go get -v -u github.com/rverton/webanalyze/cmd/webanalyze
+go install -v github.com/rverton/webanalyze/cmd/webanalyze@latest
 ### CF-CHECK
-go get -u github.com/dwisiswant0/cf-check
+go install -v github.com/dwisiswant0/cf-check@latest
 ### HEADI
-go get github.com/mlcsec/headi
+go install -v github.com/mlcsec/headi@latest
 ### CODEQL
 cd $HOME/tools
 #wget https://github.com/github/codeql-cli-binaries/releases/download/v2.5.1/codeql-linux64.zip
@@ -196,7 +196,7 @@ pip3 install pywhat
 ### CIPHEY
 python3 -m pip install ciphey --upgrade
 ### cswsh-scanner
-go get -v -u github.com/ambalabanov/cswsh-scanner/...
+go install -v github.com/ambalabanov/cswsh-scanner/...@latest
 ### METASPLOIT
 curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall  
 chmod 755 msfinstall  
