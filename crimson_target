@@ -161,9 +161,9 @@ nuclei_scan_domain(){
     git clone https://github.com/projectdiscovery/nuclei-templates.git > /dev/null
     rm -rf nuclei-templates/token-spray
     echo "[NUCLEI 80] ---------------------------------------------------------" | tee -a recon.txt
-    nuclei -u http://"$domain" -t nuclei-templates/ -stats -silent | tee -a recon.txt
+    nuclei -c 200 -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -u http://"$domain" -t nuclei-templates/ -stats -silent | tee -a recon.txt
     echo "[NUCLEI 443] ---------------------------------------------------------" | tee -a recon.txt
-    nuclei -u https://"$domain" -t nuclei-templates/ -stats -silent | tee -a recon.txt
+    nuclei -c 200 -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -u https://"$domain" -t nuclei-templates/ -stats -silent | tee -a recon.txt
 }
 
 nikto_enum_443() {
@@ -186,7 +186,7 @@ gospider_enum() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m SPIDER [1]"
-    gospider -q -r -w -a --sitemap --robots -c 10 -s  https://"$domain" -H "$cookie" >> urls.txt
+    gospider -q -r -w -a --sitemap --depth 3 --robots -t 150 -c 10 -s  https://"$domain" -H "$cookie" >> urls.txt
 }
 
 paramspider_enum() {
@@ -204,7 +204,7 @@ gau_enum() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m SPIDER [3]"
-    gau "$domain" >> urls.txt
+    timeout 20m gau "$domain" >> urls.txt
 }
 
 waybackurls_enum() {
@@ -212,7 +212,7 @@ waybackurls_enum() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m SPIDER [4]"
-    waybackurls "$domain" >> urls.txt
+    timeout 20m waybackurls "$domain" >> urls.txt
 }
 
 hakrawler_enum() {
@@ -251,9 +251,9 @@ ffuf_bruteforce() {
     echo -e "\033[0;31m [+]\033[0m STARTING DIRECTORY BRUTEFORCING"
     if [ $https_on == 1 ]
     then
-        ffuf -w "$HOME"/tools/CRIMSON/words/custom_dir.txt -t 20 -u https://"$domain"/FUZZ -mc all -fc 400 -H "$cookie" -o ffuf.json > /dev/null
+        ffuf -noninteractive -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -w "$HOME"/tools/CRIMSON/words/custom_dir.txt -t 200 -u https://"$domain"/FUZZ -mc all -fc 400 -H "$cookie" -o ffuf.json > /dev/null
     else
-        ffuf -w "$HOME"/tools/CRIMSON/words/custom_dir.txt -t 20 -u http://"$domain"/FUZZ -mc all -fc 400 -H "$cookie" -o ffuf.json > /dev/null
+        ffuf -noninteractive -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -w "$HOME"/tools/CRIMSON/words/custom_dir.txt -t 200 -u http://"$domain"/FUZZ -mc all -fc 400 -H "$cookie" -o ffuf.json > /dev/null
     fi
     cat ffuf.json | jq -c '.results[] | {url:.url,status: .status}' > status_ffuf.txt
     rm ffuf.json
@@ -324,7 +324,7 @@ check_js_live() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m CHECKING FOR LIVE .js LINKS"
-    httpx -silent -l exp/jsfiles.txt -H "$cookie" >> exp/temp_jsfiles.txt
+    httpx -silent -silent -threads 200 -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -l exp/jsfiles.txt -H "$cookie" >> exp/temp_jsfiles.txt
     mv exp/temp_jsfiles.txt exp/jsfiles.txt
 }
 
@@ -656,8 +656,9 @@ then
     ffuf_bruteforce
 else
     ### DIRECTORY BRUTEFORCING USING FEROXBUSTER (output is called ffuf.txt for comatibility reasons)
-    ferox_bruteforce
-    ferox_manual
+    ffuf_bruteforce
+    #ferox_bruteforce
+    #ferox_manual
 fi
 
 ### GATHER ALL SOURCE CODE FROM ffuf.txt AND STORE IT IN DIRECTORY > all_source_code/
