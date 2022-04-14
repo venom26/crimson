@@ -164,7 +164,7 @@ check_for_live_1() {
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING FOR LIVE SUBDOMAINS"
 	echo -e "\033[0;31m==================================\033[0m"
-	cat subdomains.txt | dnsx -t 100 -silent -r resolvers.txt -o dnsx1.txt
+	cat subdomains.txt | dnsx -t 200 -silent -r resolvers.txt -o dnsx1.txt
 	dns-wildcard-removal --domain "$DOMAIN" --input dnsx1.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live1.txt
 	rm dnsx1.txt && rm real.txt
@@ -196,7 +196,7 @@ check_for_live_2() {
 	### 12.DNSX
 	anchor_check "${FUNCNAME[0]}" || return 0
 
-	cat puredns2.txt | dnsx -t 100 -silent -r resolvers.txt -o dnsx2.txt > /dev/null
+	cat puredns2.txt | dnsx -t 200 -silent -r resolvers.txt -o dnsx2.txt > /dev/null
 	dns-wildcard-removal --domain "$DOMAIN" --input dnsx2.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live2.txt
 	rm dnsx2.txt && rm real.txt
@@ -228,7 +228,7 @@ gau_get_urls() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m GATHERING URLS"
-	cat live.txt | gau -subs >> gau.txt
+	timeout 20m cat live.txt | gau -subs >> gau.txt
 	cat gau.txt | unfurl -u domains > subs_gau.txt
 	sort -u subs_gau.txt live.txt > live2.txt
 	mv live2.txt live.txt
@@ -278,7 +278,7 @@ check_for_live_3() {
 	### 17.DNSX
 	anchor_check "${FUNCNAME[0]}" || return 0
 
-	cat subdomainizer.txt | grep "$DOMAIN" | dnsx -t 100 -silent -r resolvers.txt -o dnsx3.txt
+	cat subdomainizer.txt | grep "$DOMAIN" | dnsx -t 200 -silent -r resolvers.txt -o dnsx3.txt
 	dns-wildcard-removal --domain "$DOMAIN" --input dnsx3.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u > live3.txt
 	cat live3.txt | anew live.txt > /dev/null
@@ -392,10 +392,10 @@ check_domain_takeover() {
 	echo -e "\033[0;31m [+]\033[0m CHECKING DOMAIN TAKEOVER"
 	# Temp workaround to subjack missed fingerprint issue:
 	fingerprint_location=$(find / 2>/dev/null -name "fingerprints.json" | grep "subjack" | grep -v "subjack\/fingerprints.json")
-	subjack -w live.txt -t 20 -timeout 30 -o subjack1.txt -ssl -a -c "$fingerprint_location"
+	subjack -w live.txt -t 100 -timeout 30 -o subjack1.txt -ssl -a -c "$fingerprint_location"
 	cat subjack1.txt > subjack.txt 2>/dev/null
 	rm subjack1.txt 2>/dev/null
-	subjack -w live.txt -t 20 -timeout 30 -o subjack2.txt -a -c "$fingerprint_location"
+	subjack -w live.txt -t 100 -timeout 30 -o subjack2.txt -a -c "$fingerprint_location"
 	cat subjack2.txt >> subjack.txt 2>/dev/null
 	rm subjack2.txt 2>/dev/null
 }
