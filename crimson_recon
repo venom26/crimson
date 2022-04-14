@@ -153,7 +153,7 @@ bruteforce_dns_1() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m SUBDOMAINS BRUTEFORCING"
-	puredns bruteforce "$HOME"/tools/CRIMSON/words/dns "$DOMAIN" -w puredns1.txt -r resolvers.txt -l 250
+	puredns bruteforce "$HOME"/tools/CRIMSON/words/dns "$DOMAIN" -w puredns1.txt -r resolvers.txt --threads 300
 	cat puredns1.txt | anew subdomains.txt > /dev/null
 	rm puredns1.txt
 }
@@ -189,7 +189,7 @@ bruteforce_dns_2() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 	
 	echo -e "\033[0;31m [+]\033[0m CHECKING MUTATED LIST FOR LIVE SUBDOMAINS"
-	puredns bruteforce altdns.txt "$DOMAIN" -w puredns2.txt -r resolvers.txt
+	puredns bruteforce altdns.txt "$DOMAIN" -w puredns2.txt -r resolvers.txt --threads 300
 }
 
 check_for_live_2() {
@@ -262,7 +262,7 @@ check_for_live_urls() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING FOR LIVE URLS && STATUS CODES"
-	cat urls.txt | httpx -threads 50 -silent -sc -nc -o status_urls.txt > /dev/null
+	cat urls.txt | httpx -threads 200 -silent -sc -nc -o status_urls.txt > /dev/null
 	cat status_urls.txt | cut -d " " -f 1 > urls.txt
 }
 
@@ -406,7 +406,7 @@ make_live_with_protocol() {
 
 	echo -e "\033[0;31m [+]\033[0m CHECKING STATUS CODE OF ENUMERATED LIVE SUBDOMAINS"
 	for line in $(cat live.txt); do echo -e "https://$line\nhttp://$line" ;done >> temp_live_with_protocol.txt
-	cat temp_live_with_protocol.txt | httpx -threads 50 -silent -sc -nc -o status_live.txt > /dev/null
+	cat temp_live_with_protocol.txt | httpx -threads 200 -silent -sc -nc -o status_live.txt > /dev/null
 	cat status_live.txt | cut -d " " -f 1 > live_with_protocol.txt
 	rm temp_live_with_protocol.txt
 }
@@ -438,7 +438,7 @@ log4j_scan() {
 
 	echo -e "\033[0;31m [+]\033[0m STARTING 3RDLEVEL ENUMERATION"
 	mkdir 3rdlevel
-	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/CRIMSON/words/dns "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt -l 250 ;done < live.txt
+	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/CRIMSON/words/dns "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt --threads 300 ;done < live.txt
 	sort -u 3rdlevel/* > 3rdlevel.txt
 }
 
