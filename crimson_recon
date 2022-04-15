@@ -351,7 +351,7 @@ tcp_scanning() {
 
 	echo -e "\033[0;31m [+]\033[0m TCP PORT SCANNING"
 	echo -e "\033[0;31m [+][+]\033[0m IT WILL TAKE AROUND $(expr $(cat filtered_ip.txt | wc -l) \* 1) minutes"
-	rustscan -a filtered_ip.txt -- -n -A -Pn --append-output -oN nmap.txt -oG nmap.gnmap | tee -a rustscan.txt
+	rustscan -a filtered_ip.txt -- -n -A -Pn --append-output -T4 -oN nmap.txt -oG nmap.gnmap | tee -a rustscan.txt
 }
 
 udp_scanning() {
@@ -359,7 +359,7 @@ udp_scanning() {
 	anchor_check "${FUNCNAME[0]}" || return 0
 
 	echo -e "\033[0;31m [+]\033[0m UDP PORT SCANNING"
-	while IFS= read -r ip; do nmap -sU -T5 -F --version-intensity 0 "$ip" --append-output -oG udpnmap.gnmap -oN udpnmap.txt ;done < "$HOME"/bounty/"$DOMAIN"/filtered_ip.txt
+	while IFS= read -r ip; do nmap -T4 -sU -T5 -F --version-intensity 0 "$ip" --append-output -oG udpnmap.gnmap -oN udpnmap.txt ;done < "$HOME"/bounty/"$DOMAIN"/filtered_ip.txt
 }
 
 make_screens() {
@@ -440,7 +440,8 @@ log4j_scan() {
 
 	echo -e "\033[0;31m [+]\033[0m STARTING 3RDLEVEL ENUMERATION"
 	mkdir 3rdlevel
-	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/CRIMSON/words/dns "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt --threads 300 ;done < live.txt
+	cat live.txt | cut -d '.' -f 1,2,3 | anew -q third_degree.txt
+	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/subdomains.txt "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt --threads 300 ;done < third_degree.txt
 	sort -u 3rdlevel/* > 3rdlevel.txt
 }
 
