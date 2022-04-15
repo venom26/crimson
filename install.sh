@@ -79,6 +79,7 @@ python3 -m pip install -r SubDomainizer/requirements.txt
 git clone https://github.com/SpiderLabs/HostHunter.git 
 python3 -m pip install -r HostHunter/requirements.txt 
 git clone https://github.com/s0md3v/XSStrike.git 
+wget -O "$HOME"/tools/subdomains.txt https://gist.github.com/six2dez/a307a04a222fab5a57466c51e1569acf/raw
 python3 -m pip install -r XSStrike/requirements.txt 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
 source $HOME/.cargo/env 
