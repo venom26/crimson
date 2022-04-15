@@ -88,7 +88,7 @@ tcp_scanning() {
 
     echo "[TCP SCANNING] ---------------------------------------------------------" | tee -a recon.txt
     echo TARGET: "$TARGET" | tee -a recon.txt
-    rustscan -a "$TARGET" -- -n -A -Pn --append-output -oG exp/nmap.gnmap -oN nmap.txt  # --scan-order "Random"
+    rustscan -a "$TARGET" -- -n -A -Pn --append-output -T4 -oG exp/nmap.gnmap -oN nmap.txt  # --scan-order "Random"
     cat nmap.txt >> recon.txt
     rm nmap.txt
 }
@@ -99,7 +99,7 @@ udp_scanning() {
 
     echo "[UDP SCANNING] ---------------------------------------------------------" | tee -a recon.txt
     echo TARGET: "$TARGET" | tee -a recon.txt
-    nmap -sU "$domain" -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt | sudo nmap -sU "$domain" -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt
+    nmap -sU "$domain" -T4 -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt | sudo nmap -sU "$domain" -T4 -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt
     cat udpnmap.txt >> recon.txt
 }
 
@@ -149,7 +149,7 @@ cmseek_enum() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo "[CMSEEK] ---------------------------------------------------------" | tee -a recon.txt
-    python3 "$HOME"/tools/CMSeeK/cmseek.py -u "$domain" --follow-redirect
+    python3 "$HOME"/tools/CMSeeK/cmseek.py -u "$domain" --follow-redirect -r --batch 
     cat "$HOME"/tools/CMSeeK/Result/"$domain"/cms.json | jq . >> recon.txt
     rm -rf "$HOME"/tools/CMSeeK/Result/"$domain"/
 }
