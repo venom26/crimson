@@ -42,6 +42,7 @@ cd Amass
 go install -v github.com/OWASP/Amass/v3/...@master
 cd -
 go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest 
+go install -v github.com/projectdiscovery/notify/cmd/notify@latest
 go install github.com/tomnomnom/assetfinder@latest 
 go install github.com/lc/gau@latest 
 go install github.com/tomnomnom/unfurl@latest 
