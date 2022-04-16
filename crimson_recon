@@ -443,13 +443,14 @@ log4j_scan() {
 	cat live.txt | cut -d '.' -f 1,2,3 | anew -q third_degree.txt
 	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/subdomains.txt "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt --threads 300 ;done < third_degree.txt
 	sort -u 3rdlevel/* > 3rdlevel.txt
+	cat 3rdlevel.txt | anew -q live.txt
 }
 
 check_for_live_5() {
 	### 31.DNSX
 	anchor_check "${FUNCNAME[0]}" || return 0
 
-	cat 3rdlevel.txt | dnsx -o dnsx5.txt 2>/dev/null
+	cat 3rdlevel.txt | dnsx -o dnsx5.txt -t 200 2>/dev/null
 	dns-wildcard-removal --threads 200 --domain "$DOMAIN" --input dnsx5.txt -r resolvers.txt --output real.txt > /dev/null 2>&1
 	cat real.txt | cut -d " " -f1 | sed "s/.$//" | sort -u >> 3rdlevel_live.txt
 	rm dnsx5.txt && rm real.txt
@@ -584,6 +585,15 @@ else
 	no_brute_sorting_stuff
 fi
 
+### --- 3RDLEVEL SECTION --- ### -b
+if [ $third_level_on == 1 ]
+then
+	### THRID LEVEL SUBDOMAINS BRUTE-FORCE = 3rdlevel_live.txt
+	3dlevel_brute
+	### CHECK ALL 3RD LEVEL BRUTEFORCED DOMAINS FOR LIVE = 3rdlevel_live.txt
+	check_for_live_5
+fi
+
 ### SCRAPING THE INTERNET FOR URLS = gau.txt
 gau_get_urls
 ### SCRAPING THE INTERNET FOR URLS = waybackurls.txt
@@ -651,15 +661,6 @@ if [ $log4j_on == 1 ]
 then
 	### LOG4J VULNERABILITY CHECK ON ALL DOMAINS & URLS = log4j.txt
 	log4j_scan
-fi
-
-### --- 3RDLEVEL SECTION --- ### -b
-if [ $third_level_on == 1 ]
-then
-	### THRID LEVEL SUBDOMAINS BRUTE-FORCE = 3rdlevel_live.txt
-	3dlevel_brute
-	### CHECK ALL 3RD LEVEL BRUTEFORCED DOMAINS FOR LIVE = 3rdlevel_live.txt
-	check_for_live_5
 fi
 
 ### --- PROXY SECTION --- ### -y
