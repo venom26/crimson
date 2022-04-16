@@ -511,6 +511,10 @@ hop_by_hop_http() {
     cat "$HOME"/tools/CRIMSON/words/exp/hbh-headers | while IFS= read -r HEADER; do python2 "$HOME"/tools/hop-by-hop/hbh-header-abuse-test.py -u "http://$domain" -x "$HEADER"; sleep 1; done | tee -a recon.txt
 }
 
+to_discord() {
+    notify -bulk recon.txt
+}
+
 #---
 
 
