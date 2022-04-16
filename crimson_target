@@ -376,7 +376,7 @@ check_new_endpoints_status() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m CHECKING STATUS CODE OF NEW PATHS"
-    wfuzz -f status_new_endpoints.txt,raw -L -Z -z file,new_endpoints.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
+    wfuzz -t 100 -f status_new_endpoints.txt,raw -L -Z -z file,new_endpoints.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
     rm new_endpoints.txt
     ### REMOVE 400 && 404 RESPONSES
     cat status_new_endpoints.txt | grep "http" | grep -E "C=400  |C=404  " -v | grep -v "Pycurl" | cut -s -d "\"" -f2 > filtered_new_endpoints.txt
@@ -393,7 +393,7 @@ proxy_directories_to_burp() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m PROXING ALL DIRECTORIES && FILES TO BURP SUITE"
-    wfuzz -f status_dir.txt,raw -L -Z -z file,ffuf.txt -z file,"$HOME"/tools/CRIMSON/words/blank -p host.docker.internal:8080 -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
+    wfuzz -t 100 -f status_dir.txt,raw -L -Z -z file,ffuf.txt -z file,"$HOME"/tools/CRIMSON/words/blank -p host.docker.internal:8080 -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
 }
 
 proxy_urls_to_burp() {
@@ -410,7 +410,7 @@ check_directories_status(){
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m CHECKING STATUS CODE OF (ffuf.txt) BRUTEFORCED DIRECTORIES"
-    wfuzz -f status_dir.txt,raw -L -Z -z file,ffuf.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
+    wfuzz -t 100 -f status_dir.txt,raw -L -Z -z file,ffuf.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
 }
 
 check_urls_status(){
@@ -419,7 +419,7 @@ check_urls_status(){
 
     echo -e "\033[0;31m [+]\033[0m CHECKING STATUS CODE OF (urls.txt) CRAWLED QUERIES"
     cat urls.txt | grep "?" > temp/temp_params.txt
-    wfuzz -f status_params.txt,raw -L -Z -z file,temp/temp_params.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
+    wfuzz -t 100 -f status_params.txt,raw -L -Z -z file,temp/temp_params.txt -z file,"$HOME"/tools/CRIMSON/words/blank -H "$cookie" FUZZFUZ2Z > /dev/null 2>&1
 }
 
 preapre_params_and_files() {
@@ -427,7 +427,8 @@ preapre_params_and_files() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m PREPARING FILES FOR crimson_exploit MODULE"
-    cat status_params.txt | grep -v "C=404 " | grep http | grep -v "Pycurl" | cut -s -d "\"" -f2 | sort -u | qsreplace -a > exp/params.txt
+    #cat status_params.txt | grep -v "C=404 " | grep http | grep -v "Pycurl" | cut -s -d "\"" -f2 | sort -u | qsreplace -a > exp/params.txt
+    cat urls.txt | unfurl keys | sort -u > exp/params.txt
     cat status_dir.txt | grep -v "C=400\|C=429\|C=404" | grep http | cut -s -d "\"" -f2 | grep -v -e "Pycurl\|\.woff\|\.svg\|\.png\|\.gif\|\.jpg\|\.png\|\.css\|\.mp3\|\.mp4\|\.js" | sed "s/\/$//g" | sort -u  > files.txt
     cat files.txt > exp/dirs.txt
 }
@@ -437,7 +438,8 @@ check_for_backups() {
     anchor_check "${FUNCNAME[0]}" || return 0
 
     echo -e "\033[0;31m [+]\033[0m CHECKING EXISTANCE OF BRUTEFORCED FILES BACKUPS"
-    python2 "$HOME"/tools/CRIMSON/scripts/crimson_backuper.py -w files.txt -e "$HOME"/tools/CRIMSON/words/BCK_EXT -c "$cookie" -o backups.txt
+    #python2 "$HOME"/tools/CRIMSON/scripts/crimson_backuper.py -w files.txt -e "$HOME"/tools/CRIMSON/words/BCK_EXT -c "$cookie" -o backups.txt
+    ffuf -noninteractive -H 'User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100' -t 300 -mc 200 -noninteractive -u FUZZ1FUZZ2 -w files.txt:FUZZ1 -w "$HOME"/tools/CRIMSON/words/BCK_EXT:FUZZ2 -s > backups.txt
 }
 
 check_for_cors() {
@@ -478,7 +480,7 @@ vhost_brute_http() {
     echo "[VHOSTS 80] ---------------------------------------------------------" | tee -a recon.txt
     glength=$(curl -s -H "Host: \"$domain\"" http://\"$domain\" |wc -c)
     blength=$(curl -s -H "Host: badhost" http://\"$domain\" |wc -c)
-    ffuf -w vhosts.txt -u http://"$domain" -H "Host: FUZZ" -fs "$glength","$blength" -s | tee -a recon.txt
+    ffuf -noninteractive -H 'User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100' -t 200 -w vhosts.txt -u http://"$domain" -H "Host: FUZZ" -fs "$glength","$blength" -s | tee -a recon.txt
 }
 
 https_vhost_brute() {
@@ -488,7 +490,7 @@ https_vhost_brute() {
     echo "[VHOSTS 443] ---------------------------------------------------------" | tee -a recon.txt
     glength=$(curl -k -s -H "Host: \"$domain\"" https://\"$domain\" |wc -c)
     blength=$(curl -k -s -H "Host: badhost" https://\"$domain\" |wc -c)
-    ffuf -w vhosts.txt -u https://"$domain" -H "Host: FUZZ" -fs "$glength","$blength" -s | tee -a recon.txt
+    ffuf -noninteractive -H 'User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100' -t 200 -w vhosts.txt -u https://"$domain" -H "Host: FUZZ" -fs "$glength","$blength" -s | tee -a recon.txt
 }
 
 https_hop_by_hop() {
