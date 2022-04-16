@@ -108,7 +108,7 @@ amass_enum() {
 	rm crt.txt
 	# amass.txt
 	amass enum --passive -d "$DOMAIN" -o amass.txt -rf resolvers.txt > /dev/null 2>&1
-	amass enum  -active -d "$DOMAIN" -config ~/tools/amass_config.ini  -ip -brute -min-for-recursive 3 -o amass_active.txt
+	amass enum  -active -d "$DOMAIN" -ip -brute -min-for-recursive 3 -o amass_active.txt
 	cat amass.txt | anew subdomains.txt > /dev/null
 	cat amass_active.txt | awk '{print $1}' | anew subdomains.txt > /dev/null
 	rm amass.txt amass_active.txt
@@ -136,7 +136,7 @@ sudomy_enum() {
 assetfinder_enum() {
 	### 6.ASSETFINDER
 	anchor_check "${FUNCNAME[0]}" || return 0
-	
+
 	assetfinder --subs-only "$DOMAIN" >> assetfinder.txt
 	cat assetfinder.txt | anew subdomains.txt > /dev/null
 	rm assetfinder.txt
@@ -440,7 +440,7 @@ log4j_scan() {
 
 	echo -e "\033[0;31m [+]\033[0m STARTING 3RDLEVEL ENUMERATION"
 	mkdir 3rdlevel
-	cat live.txt | cut -d '.' -f 1,2,3 | anew -q third_degree.txt
+	cat live.txt | rev | cut -d '.' -f 1,2,3 | rev | anew -q third_degree.txt
 	while IFS= read -r subdomain; do puredns bruteforce "$HOME"/tools/subdomains.txt "$subdomain" -w 3rdlevel/"$subdomain".txt -r resolvers.txt --threads 300 ;done < third_degree.txt
 	sort -u 3rdlevel/* > 3rdlevel.txt
 	cat 3rdlevel.txt | anew -q live.txt
