@@ -99,7 +99,7 @@ udp_scanning() {
 
     echo "[UDP SCANNING] ---------------------------------------------------------" | tee -a recon.txt
     echo TARGET: "$TARGET" | tee -a recon.txt
-    nmap -sU "$domain" -T4 -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt | sudo nmap -sU "$domain" -T4 -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt
+    nmap -sU "$domain" -T4 -A --resolve-all -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt | sudo nmap -sU "$domain" --resolve-all -T4 -A -Pn --append-output -oG exp/udpnmap.gnmap -oN udpnmap.txt
     cat udpnmap.txt >> recon.txt
 }
 
@@ -602,7 +602,7 @@ else
 fi
 
 ### CHECK IF THERE IS SSL
-if wget --spider --no-check-certificate https://"$domain" 2>/dev/null; then
+if wget --tries=3 --spider --no-check-certificate https://"$domain" 2>/dev/null; then
     https_on=1
 else
     https_on=0
